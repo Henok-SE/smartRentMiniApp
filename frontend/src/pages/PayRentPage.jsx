@@ -55,6 +55,7 @@ export default function PayRentPage() {
 
   // Status & Error state
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [copied, setCopied] = useState(false);
@@ -86,14 +87,21 @@ export default function PayRentPage() {
           const res = await getPaymentStatus(activePaymentId);
           if (res.success && res.data) {
             const data = res.data;
-            setPaymentResult({
+            const checkoutLink = data.checkoutUrl || (
+              data.transactionReference 
+                ? `https://sandbox-checkout.starpayethiopia.com/en/pay/d/${data.transactionReference}`
+                : null
+            );
+            setPaymentResult(prev => ({
+              ...(prev || {}),
               ...data,
-              customerName: data.agreement?.tenant?.user 
+              customerName: data.customerName || (data.agreement?.tenant?.user 
                 ? `${data.agreement.tenant.user.firstName} ${data.agreement.tenant.user.lastName}` 
-                : 'Verified Tenant',
-              referenceNumber: data.agreement?.referenceNumber || '',
-              initiatedAt: data.createdAt || new Date().toISOString()
-            });
+                : (prev?.customerName || 'Verified Tenant')),
+              referenceNumber: data.referenceNumber || data.agreement?.referenceNumber || (prev?.referenceNumber || ''),
+              initiatedAt: data.createdAt || prev?.initiatedAt || new Date().toISOString(),
+              checkoutUrl: checkoutLink || prev?.checkoutUrl || null
+            }));
             setCurrentStep(5); // Show Receipt
           }
         } catch (err) {
@@ -230,6 +238,7 @@ export default function PayRentPage() {
     if (!inquiryResult) return;
 
     setIsLoading(true);
+    setIsRedirecting(false);
     setErrorMsg('');
 
     try {
@@ -251,6 +260,13 @@ export default function PayRentPage() {
           initiatedAt: new Date().toISOString()
         };
 
+        const targetCheckoutUrl = response.data.checkoutUrl || (
+          response.data.transactionReference
+            ? `https://sandbox-checkout.starpayethiopia.com/en/pay/d/${response.data.transactionReference}`
+            : null
+        );
+
+        fullPaymentData.checkoutUrl = targetCheckoutUrl;
         setPaymentResult(fullPaymentData);
         
         try {
@@ -261,7 +277,15 @@ export default function PayRentPage() {
           setSearchParams({ paymentId: fullPaymentData.paymentId });
         }
 
-        setCurrentStep(5); // Advance to live receipt screen
+        // Direct auto-redirect to official StarPay secure checkout portal
+        if (targetCheckoutUrl) {
+          setIsRedirecting(true);
+          console.log('[StarPay Flow] Redirecting directly to StarPay checkout portal:', targetCheckoutUrl);
+          window.location.href = targetCheckoutUrl;
+          return;
+        }
+
+        setCurrentStep(5); // Advance to live receipt screen if no checkout URL
       } else {
         setErrorMsg('Payment initiation could not be completed.');
       }
@@ -289,6 +313,7 @@ export default function PayRentPage() {
     setPaymentResult(null);
     setErrorMsg('');
     setIsPolling(false);
+    setIsRedirecting(false);
   };
 
   const handleCopyTx = (text) => {
@@ -700,11 +725,15 @@ export default function PayRentPage() {
                 variant="primary"
                 size="xl"
                 className="w-full sm:flex-1 font-bold"
-                isLoading={isLoading}
+                isLoading={isLoading || isRedirecting}
                 onClick={handleConfirmPayment}
                 rightIcon={<Check className="w-5 h-5" />}
               >
-                Confirm Payment
+                {isRedirecting
+                  ? 'Connecting to StarPay...'
+                  : isLoading
+                    ? 'Initiating Payment...'
+                    : 'Confirm Payment'}
               </Button>
             </div>
           </Card>
@@ -867,7 +896,7 @@ export default function PayRentPage() {
                 </div>
 
                 {/* Checkout Portal Banner (StarPay Hosted Checkout) */}
-                {paymentResult.checkoutUrl && (
+                {(paymentResult.checkoutUrl || paymentResult.transactionReference) && (
                   <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-lg space-y-4 border border-indigo-700/50 animate-fadeIn">
                     <div className="flex items-start justify-between gap-4">
                       <div>
@@ -888,7 +917,7 @@ export default function PayRentPage() {
 
                     <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
                       <a
-                        href={paymentResult.checkoutUrl}
+                        href={paymentResult.checkoutUrl || `https://sandbox-checkout.starpayethiopia.com/en/pay/d/${paymentResult.transactionReference}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-extrabold text-sm bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 transition-all shadow-md hover:shadow-lg active:scale-[0.99]"
@@ -899,7 +928,7 @@ export default function PayRentPage() {
 
                       <button
                         type="button"
-                        onClick={() => handleCopyTx(paymentResult.checkoutUrl)}
+                        onClick={() => handleCopyTx(paymentResult.checkoutUrl || `https://sandbox-checkout.starpayethiopia.com/en/pay/d/${paymentResult.transactionReference}`)}
                         className="w-full sm:w-auto px-4 py-3.5 rounded-xl text-xs font-semibold bg-indigo-800/60 hover:bg-indigo-800 text-indigo-100 border border-indigo-700 flex items-center justify-center gap-2 cursor-pointer transition-colors"
                         title="Copy Checkout URL"
                       >
