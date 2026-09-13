@@ -563,112 +563,83 @@ export default function PayRentPage() {
         )}
 
         {/* -------------------------------------------------------------
-            STEP 3: SELECT PAYMENT METHOD
+            STEP 3: SELECT PAYMENT METHOD (UNIFIED STARPAY GATEWAY)
            ------------------------------------------------------------- */}
         {currentStep === 3 && inquiryResult && (
           <Card className="p-6 sm:p-8 bg-white border border-slate-200 shadow-md text-left space-y-6 animate-fadeIn">
             <div className="pb-3 border-b border-slate-100">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Step 3 of 4</span>
               <h3 className="text-2xl font-extrabold text-slate-900">
-                Choose Payment Method
+                Official Digital Payment Gateway
               </h3>
               <p className="text-xs text-slate-500 mt-1">
-                Select your preferred Ethiopian digital payment gateway to settle this rent.
+                Settlements are securely processed through StarPay with instant municipal record synchronization.
               </p>
             </div>
 
-            <div className="space-y-3.5">
-              {/* Option 1: StarPay (Official Live Payment Gateway) */}
-              <div
-                onClick={() => setSelectedMethod('STARPAY')}
-                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
-                  selectedMethod === 'STARPAY'
-                    ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-100 shadow-sm'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
-                }`}
-              >
+            {/* StarPay Unified Gateway Card */}
+            <div className="p-5 sm:p-6 rounded-2xl border-2 border-indigo-600 bg-gradient-to-b from-indigo-50/70 to-white ring-2 ring-indigo-100 shadow-sm space-y-4">
+              <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-500 text-white flex items-center justify-center font-black text-xl shadow-md">
+                  <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-500 text-white flex items-center justify-center font-black text-2xl shadow-md shrink-0">
                     ★
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-extrabold text-slate-900 text-base">StarPay Payment Gateway</h4>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 tracking-wide">
-                        LIVE GATEWAY • OFFICIAL
+                      <h4 className="font-extrabold text-slate-900 text-lg">StarPay Ethiopian Payment Gateway</h4>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 tracking-wide">
+                        OFFICIAL PAYMENT RAIL
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Direct Ethiopian payment rail with instant hosted checkout (Telebirr, CBE, Cards, Mobile Wallets)
+                    <p className="text-xs text-slate-600 mt-1">
+                      Direct Ethiopian inter-bank and mobile wallet settlement network with end-to-end encryption.
                     </p>
                   </div>
                 </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                  selectedMethod === 'STARPAY' ? 'border-indigo-600 bg-indigo-600' : 'border-slate-300'
-                }`}>
-                  {selectedMethod === 'STARPAY' && <div className="w-2 h-2 rounded-full bg-white" />}
+                <div className="w-6 h-6 rounded-full border-2 border-indigo-600 bg-indigo-600 flex items-center justify-center shrink-0 mt-1">
+                  <div className="w-2.5 h-2.5 rounded-full bg-white" />
                 </div>
               </div>
 
-              {/* Option 2: Telebirr */}
-              <div
-                onClick={() => setSelectedMethod('TELEBIRR')}
-                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
-                  selectedMethod === 'TELEBIRR'
-                    ? 'border-[#0072CE] bg-blue-50/40 ring-2 ring-blue-100'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#0072CE] text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                    tb
+              {/* Supported channels inside StarPay Checkout */}
+              <div className="pt-3 border-t border-indigo-100/80">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-2.5">
+                  Supported Payment Channels Inside StarPay Checkout:
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 flex items-center gap-2 shadow-2xs">
+                    <span className="w-6 h-6 rounded-lg bg-[#0072CE] text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                      tb
+                    </span>
+                    <span className="text-xs font-bold text-slate-800">Telebirr</span>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-extrabold text-slate-900 text-base">Telebirr SuperApp / USSD</h4>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">
-                        RECOMMENDED
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Fast mobile wallet payment via Telebirr API with instant SMS verification
-                    </p>
+
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 flex items-center gap-2 shadow-2xs">
+                    <span className="w-6 h-6 rounded-lg bg-[#6A1A5B] text-white flex items-center justify-center font-bold text-[9px] shrink-0">
+                      CBE
+                    </span>
+                    <span className="text-xs font-bold text-slate-800">CBE Birr</span>
                   </div>
-                </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  selectedMethod === 'TELEBIRR' ? 'border-[#0072CE] bg-[#0072CE]' : 'border-slate-300'
-                }`}>
-                  {selectedMethod === 'TELEBIRR' && <div className="w-2 h-2 rounded-full bg-white" />}
+
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 flex items-center gap-2 shadow-2xs">
+                    <span className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                      💳
+                    </span>
+                    <span className="text-xs font-bold text-slate-800">Bank Cards</span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200/80 flex items-center gap-2 shadow-2xs">
+                    <span className="w-6 h-6 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                      📱
+                    </span>
+                    <span className="text-xs font-bold text-slate-800">Mobile Wallets</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Option 2: CBE Birr */}
-              <div
-                onClick={() => setSelectedMethod('CBE')}
-                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
-                  selectedMethod === 'CBE'
-                    ? 'border-[#6A1A5B] bg-purple-50/40 ring-2 ring-purple-100'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#6A1A5B] text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                    CBE
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-extrabold text-slate-900 text-base">Commercial Bank of Ethiopia (CBE Birr)</h4>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Direct account debit or CBE Birr mobile payment rail
-                    </p>
-                  </div>
-                </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  selectedMethod === 'CBE' ? 'border-[#6A1A5B] bg-[#6A1A5B]' : 'border-slate-300'
-                }`}>
-                  {selectedMethod === 'CBE' && <div className="w-2 h-2 rounded-full bg-white" />}
-                </div>
+              <div className="flex items-center gap-2 text-[11px] text-slate-500 pt-1">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>You will choose your specific bank, Telebirr, or card on StarPay's secure hosted portal.</span>
               </div>
             </div>
 
@@ -686,10 +657,13 @@ export default function PayRentPage() {
 
               <Button
                 variant="primary"
-                size="lg"
-                className="w-full sm:flex-1"
-                rightIcon={<ArrowRight className="w-4 h-4" />}
-                onClick={() => setCurrentStep(4)}
+                size="xl"
+                className="w-full sm:flex-1 font-bold"
+                rightIcon={<ArrowRight className="w-5 h-5" />}
+                onClick={() => {
+                  setSelectedMethod('STARPAY');
+                  setCurrentStep(4);
+                }}
               >
                 Continue to Confirmation
               </Button>
@@ -721,19 +695,9 @@ export default function PayRentPage() {
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-500">Payment Channel:</span>
                 <div>
-                  {selectedMethod === 'STARPAY' ? (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-600 text-white text-xs font-bold shadow-xs">
-                      ★ StarPay Gateway <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                    </span>
-                  ) : selectedMethod === 'TELEBIRR' ? (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0072CE] text-white text-xs font-bold shadow-xs">
-                      telebirr <span className="w-1.5 h-1.5 rounded-full bg-[#F8B700]"></span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#6A1A5B] text-white text-xs font-bold shadow-xs">
-                      CBE Birr <span className="text-[#E5A823]">★</span>
-                    </span>
-                  )}
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-indigo-600 text-white text-xs font-bold shadow-xs">
+                    ★ StarPay Unified Gateway (Telebirr, CBE, Cards)
+                  </span>
                 </div>
               </div>
               <div className="pt-3 border-t border-slate-200 flex justify-between items-baseline">
