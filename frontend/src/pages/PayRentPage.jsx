@@ -50,7 +50,7 @@ export default function PayRentPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [referenceInput, setReferenceInput] = useState('');
   const [inquiryResult, setInquiryResult] = useState(null);
-  const [selectedMethod, setSelectedMethod] = useState('TELEBIRR');
+  const [selectedMethod, setSelectedMethod] = useState('STARPAY');
   const [paymentResult, setPaymentResult] = useState(null);
 
   // Status & Error state
@@ -285,7 +285,7 @@ export default function PayRentPage() {
     setCurrentStep(1);
     setReferenceInput('');
     setInquiryResult(null);
-    setSelectedMethod('TELEBIRR');
+    setSelectedMethod('STARPAY');
     setPaymentResult(null);
     setErrorMsg('');
     setIsPolling(false);
@@ -517,7 +517,39 @@ export default function PayRentPage() {
             </div>
 
             <div className="space-y-3.5">
-              {/* Option 1: Telebirr */}
+              {/* Option 1: StarPay (Official Live Payment Gateway) */}
+              <div
+                onClick={() => setSelectedMethod('STARPAY')}
+                className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
+                  selectedMethod === 'STARPAY'
+                    ? 'border-indigo-600 bg-indigo-50/50 ring-2 ring-indigo-100 shadow-sm'
+                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                }`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-amber-500 text-white flex items-center justify-center font-black text-xl shadow-md">
+                    ★
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-extrabold text-slate-900 text-base">StarPay Payment Gateway</h4>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 tracking-wide">
+                        LIVE GATEWAY • OFFICIAL
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Direct Ethiopian payment rail with instant hosted checkout (Telebirr, CBE, Cards, Mobile Wallets)
+                    </p>
+                  </div>
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                  selectedMethod === 'STARPAY' ? 'border-indigo-600 bg-indigo-600' : 'border-slate-300'
+                }`}>
+                  {selectedMethod === 'STARPAY' && <div className="w-2 h-2 rounded-full bg-white" />}
+                </div>
+              </div>
+
+              {/* Option 2: Telebirr */}
               <div
                 onClick={() => setSelectedMethod('TELEBIRR')}
                 className={`p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
@@ -628,7 +660,11 @@ export default function PayRentPage() {
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-500">Payment Channel:</span>
                 <div>
-                  {selectedMethod === 'TELEBIRR' ? (
+                  {selectedMethod === 'STARPAY' ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-600 text-white text-xs font-bold shadow-xs">
+                      ★ StarPay Gateway <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                    </span>
+                  ) : selectedMethod === 'TELEBIRR' ? (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0072CE] text-white text-xs font-bold shadow-xs">
                       telebirr <span className="w-1.5 h-1.5 rounded-full bg-[#F8B700]"></span>
                     </span>
@@ -745,7 +781,11 @@ export default function PayRentPage() {
                     <div className="p-3 bg-white rounded-xl border border-slate-100">
                       <span className="text-slate-400 block font-medium">Settlement Channel</span>
                       <span className="font-bold text-slate-800 text-sm mt-0.5 block">
-                        {(paymentResult.provider === 'TELEBIRR' || paymentResult.method === 'MOBILE_MONEY' || selectedMethod === 'TELEBIRR') ? 'Telebirr Mobile Money' : 'CBE Commercial Bank Rail'}
+                        {(paymentResult.provider === 'STARPAY' || paymentResult.paymentMethod === 'STARPAY' || selectedMethod === 'STARPAY') 
+                          ? 'StarPay Payment Gateway (Official)'
+                          : (paymentResult.provider === 'TELEBIRR' || paymentResult.method === 'MOBILE_MONEY' || selectedMethod === 'TELEBIRR') 
+                          ? 'Telebirr Mobile Money' 
+                          : 'CBE Commercial Bank Rail'}
                       </span>
                     </div>
 
@@ -826,6 +866,55 @@ export default function PayRentPage() {
                   </p>
                 </div>
 
+                {/* Checkout Portal Banner (StarPay Hosted Checkout) */}
+                {paymentResult.checkoutUrl && (
+                  <div className="bg-gradient-to-br from-indigo-900 to-slate-900 rounded-2xl p-5 sm:p-6 text-white shadow-lg space-y-4 border border-indigo-700/50 animate-fadeIn">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 uppercase tracking-wider mb-2">
+                          ★ StarPay Gateway Session Active
+                        </span>
+                        <h3 className="text-lg sm:text-xl font-black text-white">
+                          Complete Payment on StarPay
+                        </h3>
+                        <p className="text-xs text-indigo-200/90 mt-1 max-w-lg">
+                          Your order has been registered on the StarPay Ethiopian payment gateway. Click the button below to open the official StarPay checkout page and authorize your payment.
+                        </p>
+                      </div>
+                      <div className="w-12 h-12 rounded-xl bg-indigo-800/80 border border-indigo-600 flex items-center justify-center text-amber-400 text-2xl font-black shrink-0">
+                        ★
+                      </div>
+                    </div>
+
+                    <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
+                      <a
+                        href={paymentResult.checkoutUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-extrabold text-sm bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 transition-all shadow-md hover:shadow-lg active:scale-[0.99]"
+                      >
+                        Open StarPay Checkout Portal
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+
+                      <button
+                        type="button"
+                        onClick={() => handleCopyTx(paymentResult.checkoutUrl)}
+                        className="w-full sm:w-auto px-4 py-3.5 rounded-xl text-xs font-semibold bg-indigo-800/60 hover:bg-indigo-800 text-indigo-100 border border-indigo-700 flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                        title="Copy Checkout URL"
+                      >
+                        {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                        <span>{copied ? 'Link Copied' : 'Copy Link'}</span>
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[11px] text-indigo-300/80 pt-1">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Encrypted gateway session • Auto-verified via StarPay webhook once payment is completed.</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Transaction Receipt Card */}
                 <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200/80 space-y-3.5">
                   <div className="flex items-center justify-between pb-3 border-b border-slate-200">
@@ -866,7 +955,11 @@ export default function PayRentPage() {
                     <div>
                       <span className="text-slate-500 block">Payment Channel</span>
                       <div className="mt-1">
-                        {(paymentResult.provider === 'TELEBIRR' || paymentResult.method === 'MOBILE_MONEY' || selectedMethod === 'TELEBIRR') ? (
+                        {(paymentResult.provider === 'STARPAY' || paymentResult.paymentMethod === 'STARPAY' || selectedMethod === 'STARPAY') ? (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-indigo-600 text-white text-[11px] font-bold">
+                            ★ StarPay Gateway <span className="w-1 h-1 rounded-full bg-amber-400"></span>
+                          </span>
+                        ) : (paymentResult.provider === 'TELEBIRR' || paymentResult.method === 'MOBILE_MONEY' || selectedMethod === 'TELEBIRR') ? (
                           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#0072CE] text-white text-[11px] font-bold">
                             telebirr <span className="w-1 h-1 rounded-full bg-[#F8B700]"></span>
                           </span>

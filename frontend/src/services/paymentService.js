@@ -49,10 +49,10 @@ export async function inquireRentalAgreement(referenceNumber) {
  * @param {object} payload
  * @param {string} payload.referenceNumber
  * @param {number} payload.amount
- * @param {'TELEBIRR'|'CBE'} payload.paymentMethod
+ * @param {'STARPAY'|'TELEBIRR'|'CBE'} payload.paymentMethod
  * @param {string} payload.customerName
  * @param {string} payload.customerPhoneNumber
- * @returns {Promise<{success: boolean, data: object}>}
+ * @returns {Promise<{success: boolean, data: {paymentId: string, transactionReference: string, checkoutUrl?: string, redirectUrl?: string, amount: number, status: string}}>}
  */
 export async function initiatePayment(payload) {
   const cleanRef = normalizeReference(payload.referenceNumber);
