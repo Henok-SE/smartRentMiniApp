@@ -364,7 +364,7 @@ export default function PayRentPage() {
           <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm flex items-start gap-3 animate-fadeIn">
             <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <div className="text-left">
-              <span className="font-bold block">Invalid Reference</span>
+              <span className="font-bold block">{currentStep === 1 ? 'Invalid Reference' : 'Payment Notice'}</span>
               <p className="text-xs text-red-700 mt-0.5">{errorMsg}</p>
             </div>
           </div>
