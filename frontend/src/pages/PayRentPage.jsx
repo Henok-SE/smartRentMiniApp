@@ -29,6 +29,7 @@ import {
   inquireRentalAgreement, 
   initiatePayment, 
   getPaymentStatus, 
+  verifyPayment,
   normalizeReference 
 } from '../services/paymentService';
 import { formatCurrency, formatDate, formatDateTime } from '../utils/formatters';
@@ -61,6 +62,7 @@ export default function PayRentPage() {
   const [copied, setCopied] = useState(false);
 
   const pollingRef = useRef(null);
+  const pollCountRef = useRef(0);
 
   // 1. On Mount: Only restore if there is a specific paymentId in URL or sessionStorage
   useEffect(() => {
@@ -84,9 +86,23 @@ export default function PayRentPage() {
       if (activePaymentId) {
         setIsLoading(true);
         try {
-          const res = await getPaymentStatus(activePaymentId);
+          let res = await getPaymentStatus(activePaymentId);
           if (res.success && res.data) {
-            const data = res.data;
+            let data = res.data;
+
+            // If returning from checkout with paymentId and status is still PENDING, auto-verify!
+            if (urlPaymentId && data.status === 'PENDING') {
+              try {
+                console.log('[SmartRent] Auto-verifying returning tenant payment settlement...');
+                const verifyRes = await verifyPayment(activePaymentId);
+                if (verifyRes.success && verifyRes.data) {
+                  data = verifyRes.data;
+                }
+              } catch (verifyErr) {
+                console.warn('[SmartRent] Auto-verify attempt:', verifyErr.message);
+              }
+            }
+
             const checkoutLink = data.checkoutUrl || (
               data.transactionReference 
                 ? `https://sandbox-checkout.starpayethiopia.com/en/pay/d/${data.transactionReference}`
@@ -135,10 +151,21 @@ export default function PayRentPage() {
     }
 
     setIsPolling(true);
+    pollCountRef.current = 0;
     const paymentId = paymentResult.paymentId;
 
     pollingRef.current = setInterval(async () => {
       try {
+        pollCountRef.current += 1;
+        // Cap polling to 20 attempts (60 seconds)
+        if (pollCountRef.current > 20) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = null;
+          setIsPolling(false);
+          console.log('[SmartRent Poller] Polling window completed. Use Verify button to refresh.');
+          return;
+        }
+
         const res = await getPaymentStatus(paymentId);
         if (res.success && res.data) {
           const updated = res.data;
@@ -176,18 +203,27 @@ export default function PayRentPage() {
     };
   }, [currentStep, paymentResult?.status, paymentResult?.paymentId]);
 
-  // Handle Manual Status Refresh
+  // Handle Manual Status Refresh & Settlement Verification
   const handleManualRefreshStatus = async () => {
     if (!paymentResult?.paymentId) return;
     setIsLoading(true);
+    setErrorMsg('');
     try {
-      const res = await getPaymentStatus(paymentResult.paymentId);
+      // First attempt verification so that if user completed payment, it immediately transitions to PAID
+      let res;
+      try {
+        res = await verifyPayment(paymentResult.paymentId);
+      } catch {
+        res = await getPaymentStatus(paymentResult.paymentId);
+      }
+
       if (res.success && res.data) {
         const updated = res.data;
         setPaymentResult(prev => {
           const merged = {
             ...prev,
             ...updated,
+            paidDate: updated.paidDate || new Date().toISOString(),
             status: updated.status
           };
           try {
@@ -197,7 +233,7 @@ export default function PayRentPage() {
         });
       }
     } catch (err) {
-      setErrorMsg('Could not refresh status: ' + err.message);
+      setErrorMsg('Could not verify status: ' + err.message);
     } finally {
       setIsLoading(false);
     }
@@ -1015,19 +1051,22 @@ export default function PayRentPage() {
                   </div>
                 </div>
 
-                {/* Status Refresh Helper */}
-                <div className="flex items-center justify-between p-3 rounded-xl bg-blue-50/60 border border-blue-100 text-xs">
-                  <span className="text-blue-900">
-                    Auto-checking payment settlement every 3 seconds...
-                  </span>
+                {/* Status Refresh & Settlement Verification Helper */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-blue-50/80 border border-blue-200/80 text-xs">
+                  <div className="flex items-center gap-2">
+                    <RefreshCw className={`w-4 h-4 text-blue-600 ${isPolling ? 'animate-spin' : ''}`} />
+                    <span className="text-blue-900 font-medium">
+                      {isPolling ? 'Live settlement monitoring active...' : 'Awaiting provider confirmation.'}
+                    </span>
+                  </div>
                   <button
                     type="button"
                     onClick={handleManualRefreshStatus}
                     disabled={isLoading}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-blue-200 text-blue-700 font-bold hover:bg-blue-50 cursor-pointer shadow-xs"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold cursor-pointer shadow-sm hover:shadow transition-all active:scale-[0.99]"
                   >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                    Refresh Now
+                    <Check className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                    {isLoading ? 'Verifying...' : 'I Have Paid — Verify & Settle Now'}
                   </button>
                 </div>
 

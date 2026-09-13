@@ -95,7 +95,8 @@ export async function getPaymentStatus(paymentId) {
   }
 
   try {
-    const response = await apiClient.get(`/api/payments/${encodeURIComponent(paymentId)}`);
+    // Add cache-busting timestamp parameter to eliminate 304 cached responses
+    const response = await apiClient.get(`/api/payments/${encodeURIComponent(paymentId)}?_t=${Date.now()}`);
     if (response.data && response.data.success) {
       return {
         success: true,
@@ -103,6 +104,33 @@ export async function getPaymentStatus(paymentId) {
       };
     }
     throw new Error(response.data?.error || 'Payment record not found.');
+  } catch (error) {
+    const errorMsg = error.response?.data?.error || error.message;
+    throw new Error(errorMsg);
+  }
+}
+
+/**
+ * Verify and confirm payment settlement with the backend
+ * Corresponds to: POST /api/payments/:paymentId/verify
+ * 
+ * @param {string} paymentId
+ * @returns {Promise<{success: boolean, data: object}>}
+ */
+export async function verifyPayment(paymentId) {
+  if (!paymentId) {
+    throw new Error('paymentId is required to verify payment');
+  }
+
+  try {
+    const response = await apiClient.post(`/api/payments/${encodeURIComponent(paymentId)}/verify`);
+    if (response.data && response.data.success) {
+      return {
+        success: true,
+        data: response.data.data
+      };
+    }
+    throw new Error(response.data?.error || 'Payment verification failed.');
   } catch (error) {
     const errorMsg = error.response?.data?.error || error.message;
     throw new Error(errorMsg);
